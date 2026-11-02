@@ -44,8 +44,10 @@ enum GitHubHosting {
         var errorDescription: String? { message }
     }
 
-    /// Uploads the signed IPA as a release asset, commits a manifest.plist to the
-    /// Pages branch and returns the public HTTPS manifest URL.
+    /// Uploads the signed IPA as a release asset, commits a manifest to the
+    /// Pages branch and returns the public HTTPS manifest URL. The manifest uses
+    /// the .xml extension because GitHub Pages serves .plist as
+    /// application/octet-stream, while .xml is served as application/xml.
     static func publish(ipa: URL, entry: IPAEntry) async throws -> URL {
         guard GitHubHostingConfig.isConfigured else {
             throw APIError(message: "GitHub Hosting is on, but the account or token is missing. Open Settings → GitHub Hosting.")
@@ -72,12 +74,12 @@ enum GitHubHosting {
                                             version: entry.version,
                                             title: entry.name)
         let id = UUID().uuidString.lowercased()
-        let path = "docs/manifests/\(id).plist"
+        let path = "docs/manifests/\(id).xml"
         try await putFile(owner: owner, repo: repo, branch: branch, token: token,
                           path: path, data: Data(manifest.utf8),
                           message: "Add manifest for \(entry.name) \(entry.version)")
 
-        let url = pages.appendingPathComponent("manifests/\(id).plist")
+        let url = pages.appendingPathComponent("manifests/\(id).xml")
         try await waitUntilPublished(url)
         return url
     }
