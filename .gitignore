@@ -1,0 +1,9 @@
+build/
+DerivedData/
+*.ipa
+*.xcarchive
+TrollSign.xcodeproj/
+*.xcworkspace/
+.DS_Store
+docs/manifests/*.plist
+!docs/manifests/.gitkeep

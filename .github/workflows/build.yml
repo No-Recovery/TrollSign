@@ -1,0 +1,83 @@
+name: Build unsigned IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build TrollSign.ipa
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for device (unsigned)
+        run: |
+          xcodebuild \
+            -project TrollSign.xcodeproj \
+            -scheme TrollSign \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package IPA
+        run: |
+          set -euo pipefail
+          APP="build/Build/Products/Release-iphoneos/TrollSign.app"
+          test -d "$APP"
+          rm -rf Payload TrollSign.ipa
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry TrollSign.ipa Payload
+          ls -lh TrollSign.ipa
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrollSign-unsigned-ipa
+          path: TrollSign.ipa
+          if-no-files-found: error
+
+      - name: Upload generated Xcode project
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrollSign-xcodeproj
+          path: TrollSign.xcodeproj
+          if-no-files-found: error
+
+      - name: Publish "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: TrollSign — latest unsigned IPA
+          body: |
+            Unsigned IPA built automatically from `${{ github.sha }}` on a macOS runner.
+
+            Install with TrollStore, Sideloadly, or AltStore. For a normal
+            itms-services install use the in-app GitHub Hosting feature with
+            your own signing certificate.
+          files: TrollSign.ipa
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrollSign — подпись и установка IPA</title>
+<style>
+  :root { color-scheme: dark; --bg:#0b0d12; --card:#151923; --line:#242b3a; --text:#eef2ff; --muted:#9aa5bd; --accent:#6d8cff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         background:radial-gradient(1000px 600px at 50% -200px,#1b2340,var(--bg)); color:var(--text); }
+  main { max-width:720px; margin:0 auto; padding:56px 20px 80px; }
+  .icon { width:96px; height:96px; border-radius:24px; box-shadow:0 18px 50px #0009; display:block; margin:0 auto 22px; }
+  h1 { font-size:40px; line-height:1.1; text-align:center; margin:0 0 10px; letter-spacing:-.02em; }
+  .sub { text-align:center; color:var(--muted); margin:0 auto 34px; max-width:560px; }
+  .card { background:linear-gradient(180deg,#181d29,#12161f); border:1px solid var(--line);
+          border-radius:18px; padding:22px; margin:16px 0; }
+  .btn { display:block; text-align:center; text-decoration:none; font-weight:650; color:#fff;
+         background:linear-gradient(180deg,#7c98ff,#536fe8); border-radius:12px; padding:14px 18px;
+         box-shadow:0 8px 24px #536fe855; }
+  .btn.secondary { background:#1d2331; border:1px solid var(--line); box-shadow:none; color:var(--text); }
+  .row { display:grid; gap:10px; grid-template-columns:1fr 1fr; }
+  h2 { font-size:18px; margin:0 0 10px; }
+  ol, ul { margin:0; padding-left:22px; color:#cbd4e8; }
+  li + li { margin-top:6px; }
+  code { background:#0e1118; border:1px solid var(--line); border-radius:6px; padding:2px 6px; font-size:.9em; }
+  .note { color:var(--muted); font-size:14px; }
+  footer { color:#6f7a93; text-align:center; font-size:13px; margin-top:34px; }
+  @media (max-width:520px) { h1 { font-size:32px; } .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <img class="icon" src="icon.png" alt="TrollSign">
+  <h1>TrollSign</h1>
+  <p class="sub">Подписывает IPA вашим сертификатом и устанавливает приложения по HTTPS — локально или через GitHub Pages.</p>
+
+  <div class="card">
+    <a class="btn" href="https://github.com/No-Recovery/TrollSign/releases/latest/download/TrollSign.ipa">Скачать TrollSign.ipa</a>
+    <p class="note" style="margin:12px 2px 0">Сборка без подписи. Устанавливается через TrollStore, Sideloadly или AltStore. Для установки обычных приложений внутри TrollSign добавьте свой сертификат.</p>
+  </div>
+
+  <div class="card">
+    <h2>Что внутри</h2>
+    <ul>
+      <li>Подпись IPA через <b>zsign</b> (настоящая, не заглушка).</li>
+      <li><b>GitHub Hosting</b>: подписанный IPA загружается в GitHub Releases, манифест — в GitHub Pages, установка идёт по <code>itms-services</code> без локального сервера.</li>
+      <li>Локальный HTTPS-сервер на <code>localhost.direct</code> остаётся как запасной вариант.</li>
+      <li>Сертификаты и установочный сервер: <b>Настройки → долгое нажатие на версию → Advanced → Certificates</b>.</li>
+      <li>URL-схемы: <code>trollsign://install?url=…</code> и <code>trollstorelite://install?url=…</code>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Установка</h2>
+    <ol>
+      <li>Скачайте <code>TrollSign.ipa</code>.</li>
+      <li>Откройте файл в TrollStore (или установите через Sideloadly / AltStore).</li>
+      <li>В приложении откройте <b>Settings → GitHub Hosting</b>, укажите владельца, репозиторий и personal access token.</li>
+      <li>Добавьте сертификат: <b>Settings → долгое нажатие на «TrollSign 2.2» → Advanced → Certificates → +</b>.</li>
+      <li>Вкладка <b>Apps → +</b> → выберите IPA. Он подпишется и установится через GitHub Pages.</li>
+    </ol>
+  </div>
+
+  <div class="row">
+    <a class="btn secondary" href="https://github.com/No-Recovery/TrollSign">Исходники на GitHub</a>
+    <a class="btn secondary" href="https://github.com/No-Recovery/TrollSign/releases">Все релизы</a>
+  </div>
+
+  <footer>TrollSign 2.2 · GitHub Pages hosting by No-Recovery</footer>
+</main>
+</body>
+</html>

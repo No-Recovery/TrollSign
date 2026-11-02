@@ -1,0 +1,42 @@
+import UIKit
+
+/// Installs a signed IPA either through GitHub Pages (recommended) or through
+/// the local HTTPS loopback server + itms-services (like ESign).
+enum Installer {
+    @MainActor
+    static func install(signedIPA: URL, entry: IPAEntry) async throws {
+        if GitHubHostingConfig.isEnabled {
+            guard GitHubHostingConfig.isConfigured else {
+                throw AppError("GitHub Hosting is enabled but not configured. Open Settings → GitHub Hosting.")
+            }
+            KeepAlive.shared.start()
+            let manifest = try await GitHubHosting.publish(ipa: signedIPA, entry: entry)
+            try await open(manifest: manifest)
+            return
+        }
+
+        let host = ServerConfig.host
+        guard !host.isEmpty else { throw AppError("Server host is not set. Open Settings → Advanced → Certificates → Local Installation Server.") }
+
+        try await LocalServer.shared.start()
+        let id = entry.id.uuidString
+        LocalServer.shared.register(id: id, item: .init(ipa: signedIPA, bundleID: entry.bundleID,
+                                                        version: entry.version, title: entry.name))
+        KeepAlive.shared.start()
+
+        guard let manifest = URL(string: "https://\(host):\(ServerConfig.port)/\(id).plist") else {
+            throw AppError("Bad manifest URL")
+        }
+        try await open(manifest: manifest)
+    }
+
+    private static func open(manifest: URL) async throws {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~"))
+        let encoded = manifest.absoluteString.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        guard let url = URL(string: "itms-services://?action=download-manifest&url=\(encoded)") else {
+            throw AppError("Bad manifest URL")
+        }
+        let ok = await UIApplication.shared.open(url)
+        if !ok { throw AppError("iOS refused to open the install link") }
+    }
+}
