@@ -47,7 +47,7 @@ enum GitHubHosting {
     /// Uploads the signed IPA as a release asset, commits a manifest.plist to the
     /// Pages branch and returns the public HTTPS manifest URL.
     static func publish(ipa: URL, entry: IPAEntry) async throws -> URL {
-        guard isConfigured else {
+        guard GitHubHostingConfig.isConfigured else {
             throw APIError(message: "GitHub Hosting is on, but the account or token is missing. Open Settings → GitHub Hosting.")
         }
 
@@ -84,7 +84,7 @@ enum GitHubHosting {
 
     /// Quick diagnostic used by the settings screen.
     static func test() async -> String {
-        guard isConfigured else { return "Enter a token first (and check owner/repository)." }
+        guard GitHubHostingConfig.isConfigured else { return "Enter a token first (and check owner/repository)." }
         do {
             let repo = try await getRepo(owner: GitHubHostingConfig.owner,
                                          repo: GitHubHostingConfig.repo,
