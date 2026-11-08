@@ -51,7 +51,9 @@ enum Respring {
 
     private static func killSpringBoard() -> Bool {
         var pid: pid_t = 0
-        var arguments: [UnsafeMutablePointer<CChar>?] = ["killall", "-9", "SpringBoard"].map { strdup($0) }
+        var arguments: [UnsafeMutablePointer<CChar>?] = ["killall", "-9", "SpringBoard"].map { argument in
+            argument.withCString { strdup($0) }
+        }
         arguments.append(nil)
         defer {
             for pointer in arguments {
