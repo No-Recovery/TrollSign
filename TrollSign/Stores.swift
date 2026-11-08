@@ -58,7 +58,7 @@ final class AppStore: ObservableObject {
         defer { busy = false; statusText = "" }
         do {
             guard let certs, let c = certs.selected else {
-                throw AppError("No certificate. Open Settings, long-press the version, then Settings → Advanced → Certificates and add one.")
+                throw AppError("No certificate. Long-press the Settings tab in the bottom bar → Certificates → +, then add a .p12 and a .mobileprovision.")
             }
             if c.isExpired { throw AppError("The selected provisioning profile has expired.") }
 
@@ -73,7 +73,7 @@ final class AppStore: ObservableObject {
                 apps[i].signedFileName = out.lastPathComponent
                 entry = apps[i]
             }
-            statusText = "Installing…"
+            statusText = "Uploading…"
             try await Installer.install(signedIPA: out, entry: entry)
         } catch { errorText = error.localizedDescription }
     }
@@ -186,7 +186,6 @@ final class AppStore: ObservableObject {
 final class CertStore: ObservableObject {
     @Published var certs: [CertEntry] = [] { didSet { save() } }
     @Published var selectedID: UUID?
-    @Published var hiddenTabUnlocked = false
 
     private let root = dir(.applicationSupportDirectory, "Certs")
     private var indexURL: URL { root.appendingPathComponent("index.json") }

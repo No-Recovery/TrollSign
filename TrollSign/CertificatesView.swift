@@ -52,10 +52,11 @@ struct CertificatesView: View {
                     Task { serverStatus = await LocalServer.shared.selfTest() }
                 }
             } header: { Text("Local Installation Server") } footer: {
-                Text("Only used when GitHub Hosting is off. Installation goes through itms-services, which needs HTTPS. By default it uses localhost.direct with the server.p12 built into the app; you can override both here. \(serverStatus ?? "")")
+                Text("Optional fallback for the built-in server. Installation goes through itms-services, which needs HTTPS. Use localhost.direct (or your own domain pointing to 127.0.0.1) and import a server .p12. Ready and GitHub hosting do not need this. \(serverStatus ?? "")")
             }
         }
         .listStyle(.insetGrouped)
+        .liquidScreen()
         .sheet(isPresented: $showServerPicker) {
             DocumentPicker(onPick: { url in
                 showServerPicker = false

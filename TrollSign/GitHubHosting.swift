@@ -25,7 +25,6 @@ enum GitHubHostingConfig {
     }
     static var token: String { Keychain.get("github.token") ?? "" }
 
-    static var isEnabled: Bool { UserDefaults.standard.bool(forKey: "ghHostingEnabled") }
     static var isConfigured: Bool { !token.isEmpty && !owner.isEmpty && !repo.isEmpty }
 
     static var pagesBase: URL? {
@@ -293,99 +292,5 @@ enum GitHubHosting {
         let out = name.unicodeScalars.map { allowed.contains($0) ? String($0) : "-" }.joined()
             .trimmingCharacters(in: CharacterSet(charactersIn: "-."))
         return out.isEmpty ? "app" : out
-    }
-}
-
-// MARK: - Settings UI
-
-struct GitHubHostingView: View {
-    @AppStorage("ghHostingEnabled") private var enabled = false
-    @AppStorage("ghOwner") private var owner = GitHubHostingConfig.defaultOwner
-    @AppStorage("ghRepo") private var repo = GitHubHostingConfig.defaultRepo
-    @AppStorage("ghBranch") private var branch = "main"
-    @AppStorage("ghPagesBase") private var pagesBase = ""
-
-    @State private var token = ""
-    @State private var hasToken = false
-    @State private var status: String?
-    @State private var busy = false
-
-    var body: some View {
-        Form {
-            Section {
-                Toggle("Use GitHub Hosting", isOn: $enabled)
-            } footer: {
-                Text("When enabled, signed IPAs are uploaded to GitHub Releases and installed through a manifest hosted on GitHub Pages. The local HTTPS server is skipped.")
-            }
-
-            Section {
-                TextField("Owner", text: $owner)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                TextField("Repository", text: $repo)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                TextField("Branch", text: $branch)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                TextField("Pages URL (optional)", text: $pagesBase)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
-            } header: {
-                Text("Repository")
-            } footer: {
-                Text("Default Pages URL: https://\(owner.lowercased()).github.io/\(repo)/ — the repository is created automatically if it does not exist. Pages must publish the /docs folder of the selected branch.")
-            }
-
-            Section {
-                SecureField(hasToken ? "Token saved — paste a new one to replace" : "Personal access token", text: $token)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button("Save Token") {
-                    let t = token.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !t.isEmpty else { return }
-                    Keychain.set(t, for: "github.token")
-                    token = ""
-                    hasToken = true
-                    status = "Token saved to the Keychain."
-                }
-                .disabled(token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                if hasToken {
-                    Button("Remove Token", role: .destructive) {
-                        Keychain.delete("github.token")
-                        hasToken = false
-                        status = "Token removed."
-                    }
-                }
-            } header: {
-                Text("Access Token")
-            } footer: {
-                Text("Classic token scopes: repo. Fine-grained token: Contents (read/write), Releases (read/write), Pages (read/write), Administration (read/write) for creating the repository. The token is stored only in the iOS Keychain.")
-            }
-
-            Section {
-                Button {
-                    busy = true
-                    status = "Checking…"
-                    Task {
-                        status = await GitHubHosting.test()
-                        busy = false
-                    }
-                } label: {
-                    HStack { Text("Test Connection"); Spacer(); if busy { ProgressView() } }
-                }
-                .disabled(busy)
-
-                if let status {
-                    Text(status).font(.footnote).foregroundStyle(.secondary)
-                }
-            } footer: {
-                if let page = GitHubHostingConfig.installPage {
-                    Text("Hosted page: \(page.absoluteString)")
-                }
-            }
-        }
-        .navigationTitle("GitHub Hosting")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            token = ""
-            hasToken = !GitHubHostingConfig.token.isEmpty
-        }
     }
 }

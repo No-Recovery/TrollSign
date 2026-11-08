@@ -6,11 +6,20 @@ struct TrollSignApp: App {
     @StateObject private var certs = CertStore()
     @AppStorage("urlSchemeEnabled") private var urlSchemeEnabled = true
 
+    init() {
+        // Ready hosting is the zero-setup default. GitHub hosting can be
+        // selected later in Settings → Hosting after adding a token.
+        if UserDefaults.standard.string(forKey: "hostingProvider") == nil {
+            UserDefaults.standard.set(HostingProvider.ready.rawValue, forKey: "hostingProvider")
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(store)
                 .environmentObject(certs)
+                .tint(LiquidTheme.accent)
                 .onOpenURL { url in
                     if url.isFileURL {                       // "Open in…" for .ipa
                         store.request(.local(url))
@@ -31,15 +40,31 @@ struct RootView: View {
     @EnvironmentObject var certs: CertStore
     @EnvironmentObject var store: AppStore
     @State private var selection = 0
+    @State private var showCertificates = false
 
     var body: some View {
-        TabView(selection: $selection) {
-            AppsView()
-                .tabItem { Label("Apps", systemImage: "square.stack.3d.up.fill") }
-                .tag(0)
-            SettingsView()
-                .tabItem { Label("Settings", systemImage: "gear") }
-                .tag(1)
+        Group {
+            switch selection {
+            case 1: SettingsView()
+            default: AppsView()
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            GlassTabBar(selection: $selection) {
+                showCertificates = true
+            }
+        }
+        .sheet(isPresented: $showCertificates) {
+            NavigationStack {
+                CertificatesView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Done") { showCertificates = false }
+                        }
+                    }
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .onAppear { store.certs = certs }
     }

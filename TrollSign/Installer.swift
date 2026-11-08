@@ -1,22 +1,35 @@
 import UIKit
 
-/// Installs a signed IPA either through GitHub Pages (recommended) or through
-/// the local HTTPS loopback server + itms-services (like ESign).
+/// Installs a signed IPA through the selected hosting provider.
+///
+/// - `.ready`  — zero-setup anonymous HTTPS host (works immediately).
+/// - `.github` — the user's GitHub Releases + Pages (optional).
+/// - `.local`  — the built-in HTTPS loopback server, used by Certificates.
 enum Installer {
     @MainActor
     static func install(signedIPA: URL, entry: IPAEntry) async throws {
-        if GitHubHostingConfig.isEnabled {
+        switch HostingConfig.provider {
+        case .ready:
+            let manifest = try await ReadyHosting.publish(ipa: signedIPA, entry: entry)
+            try await open(manifest: manifest)
+
+        case .github:
             guard GitHubHostingConfig.isConfigured else {
-                throw AppError("GitHub Hosting is enabled but not configured. Open Settings → GitHub Hosting.")
+                throw AppError("GitHub hosting needs an access token. Open Settings → Hosting, add a token, or switch to Ready hosting.")
             }
             KeepAlive.shared.start()
             let manifest = try await GitHubHosting.publish(ipa: signedIPA, entry: entry)
             try await open(manifest: manifest)
-            return
         }
+    }
 
+    /// Used by the Certificates screen to test the localhost.direct server.
+    @MainActor
+    static func installLocally(signedIPA: URL, entry: IPAEntry) async throws {
         let host = ServerConfig.host
-        guard !host.isEmpty else { throw AppError("Server host is not set. Open Settings → Advanced → Certificates → Local Installation Server.") }
+        guard !host.isEmpty else {
+            throw AppError("Server host is not set. Long-press the Settings tab → Local Installation Server.")
+        }
 
         try await LocalServer.shared.start()
         let id = entry.id.uuidString
