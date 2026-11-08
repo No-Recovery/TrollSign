@@ -1,40 +1,62 @@
-# TrollSign 2.2
+# TrollSign 2.3
 
-Личная SwiftUI-утилита для подписи и установки IPA на iPhone.
+Личная SwiftUI-утилита для подписи и установки IPA на iPhone. Подписывает IPA
+вашим сертификатом (`zsign`), затем устанавливает его через HTTPS
+`itms-services`.
 
-**Что делает:** `Apps → +` → выбор `.ipa` → подпись сертификатом (zsign) → установка.
-
-Есть два способа доставки подписанного IPA на устройство:
-
-1. **GitHub Hosting (новое, рекомендуется)** — IPA загружается в GitHub Releases, рядом
-   создаётся `manifest.plist` в GitHub Pages, установка идёт по HTTPS через
-   `itms-services`. Не нужен ни локальный сервер, ни сертификат для `localhost.direct`.
-2. **Локальный HTTPS-сервер** — как раньше: `localhost.direct` (или свой домен,
-   указывающий на `127.0.0.1`) + импортированный `server.p12`.
+**Быстрый старт:** `Apps → +` → выберите `.ipa` → приложение подпишет его
+активным сертификатом и установит. Готовый хостинг уже включён — токен и
+настройка не нужны.
 
 ---
 
-## Где теперь сертификаты (скрытая вкладка)
+## Что нового в 2.3
 
-Отдельной вкладки **Certs больше нет**. Она перенесена внутрь **Settings**:
-
-1. Откройте **Settings**.
-2. Сделайте **долгое нажатие (1.5 с)** на строку **«TrollSign 2.2»** в самом низу.
-3. Появится раздел **Advanced → Certificates**.
-
-Там же: список сертификатов, `+` для добавления `.p12` + `.mobileprovision`,
-выбор активного сертификата и настройки **Local Installation Server**
-(host / port / server.p12 / Test Server).
-
-Повторное долгое нажатие снова прячет раздел.
+- **Ready hosting** — хостинг работает сразу, без аккаунта и токена.
+  Подписанный IPA и install-манифест автоматически загружаются на публичный
+  HTTPS-хост, после чего открывается `itms-services`.
+- **Liquid Glass** — стеклянные панели, плавающий таб-бар, градиентный фон и
+  системный Liquid Glass на iOS 26+.
+- **Сертификаты спрятаны сильнее** — отдельной вкладки и пункта в настройках
+  больше нет. Долгое нажатие (0.55 с) на **нижний значок Settings** открывает
+  экран сертификатов.
+- **Respring** — кнопка в Settings → Maintenance, как в TrollStore (через
+  `SBSRelaunchAction` / `FBSSystemService`).
+- **GitHub hosting остался** — можно публиковать в свой репозиторий, но это
+  уже необязательно.
 
 ---
 
-## GitHub Hosting
+## Где сертификаты
 
-Открывается: **Settings → GitHub Hosting**.
+1. Откройте приложение.
+2. Зажмите **нижний значок Settings** в плавающем таб-баре примерно на
+   0.55 секунды.
+3. Откроется экран **Certificates**: добавьте `.p12` + `.mobileprovision`,
+   выберите активный сертификат.
+4. Там же — необязательный локальный HTTPS-сервер (`localhost.direct`).
 
-Поля:
+Никаких подсказок «Certificates hidden again» в Settings больше нет.
+
+---
+
+## Хостинг
+
+### Ready hosting (по умолчанию)
+
+Ничего настраивать не нужно. При установке:
+
+1. IPA подписывается выбранным сертификатом.
+2. IPA загружается на публичный HTTPS-хост (catbox.moe).
+3. Рядом создаётся install-манифест `.xml`.
+4. iOS открывает `itms-services://` и устанавливает приложение.
+
+Ограничение: файл до 200 МБ. Ссылки публичные (но не индексируются), поэтому
+не загружайте приватные приложения, если это критично.
+
+### GitHub hosting (опционально)
+
+`Settings → Hosting → GitHub hosting`. Поля уже заполнены:
 
 | Поле | Значение по умолчанию |
 |---|---|
@@ -44,65 +66,51 @@
 | Pages URL | `https://no-recovery.github.io/TrollSign/` |
 | Token | хранится только в iOS Keychain |
 
-Что делает приложение при установке:
+Что делает приложение:
 
-1. Проверяет репозиторий (если его нет — создаёт публичный репозиторий).
-2. Включает GitHub Pages: ветка `main`, папка `/docs`.
+1. Проверяет репозиторий.
+2. Включает Pages: ветка `main`, папка `/docs`.
 3. Создаёт GitHub Release `ipa-<timestamp>`.
-4. Загружает подписанный IPA как asset релиза.
-5. Кладёт `docs/manifests/<uuid>.plist` через Contents API.
-6. Ждёт, пока Pages опубликует манифест, и открывает `itms-services://`.
+4. Загружает подписанный IPA как asset.
+5. Кладёт `docs/manifests/<uuid>.xml`.
+6. Ждёт публикации Pages и открывает `itms-services`.
 
-### Токен
-
-Нужен **personal access token** (не пароль):
+Токен нужен только для GitHub hosting:
 
 - classic: scope **repo**;
-- fine-grained: **Contents: Read and write**, **Releases: Read and write**,
-  **Pages: Read and write**, **Administration: Read and write** (для создания репозитория).
+- fine-grained: **Contents**, **Releases**, **Pages** read/write, плюс
+  **Administration**, если TrollSign должен создавать репозиторий.
 
 Токен вводится в приложении и хранится в Keychain. В исходниках и в Git его нет.
 
-### Публичная страница
+### Локальный сервер (запасной вариант)
 
-`https://no-recovery.github.io/TrollSign/` — лендинг с кнопкой скачивания
-последней unsigned-сборки и инструкцией.
-
-Сами манифесты, которые создаёт приложение, лежат по адресу
-`https://no-recovery.github.io/TrollSign/manifests/<uuid>.plist`.
+`Settings` (долгое нажатие) → `Certificates` → `Local Installation Server`.
+Нужен `server.p12` для `localhost.direct` (или своего домена на `127.0.0.1`).
+Используется только если вы вызываете локальную установку вручную.
 
 ---
 
-## Структура
+## Respring
 
-```
-TrollSign/
-├── project.yml                 # XcodeGen-спецификация (iOS 16+)
-├── TrollSign/
-│   ├── TrollSignApp.swift      # точка входа, URL-схемы
-│   ├── AppsView.swift
-│   ├── SettingsView.swift      # скрытый вход в Certificates + GitHub Hosting
-│   ├── CertificatesView.swift  # сертификаты + локальный сервер
-│   ├── GitHubHosting.swift     # GitHub API, Releases, Pages, манифест
-│   ├── Installer.swift         # GitHub Pages или локальный сервер
-│   ├── Signer.swift            # zsign: unzip → sign → zip
-│   ├── Stores.swift
-│   ├── LocalServer.swift
-│   ├── Models.swift
-│   ├── Keychain.swift
-│   ├── KeepAlive.swift
-│   ├── DocumentPicker.swift
-│   ├── Info.plist
-│   └── Assets.xcassets
-├── docs/                       # GitHub Pages (лендинг + manifests/)
-└── .github/workflows/build.yml # сборка unsigned IPA на macOS
-```
+`Settings → Maintenance → Respring` перезапускает SpringBoard тем же приватным
+путём, что TrollStore:
+
+- `SBSRelaunchAction("restartRenderServer", …)`;
+- `FBSSystemService sendActions:withResult:withError:`;
+- запасной вариант — `killall -9 SpringBoard`.
+
+На сборке с обычным сертификатом система может отклонить запрос — тогда
+TrollSign покажет сообщение. На TrollStore / platform-application сборке
+respring работает.
+
+---
 
 ## Сборка
 
-### Через GitHub Actions (без Mac)
+### GitHub Actions (без Mac)
 
-Workflow `.github/workflows/build.yml` запускается на `macos-15`:
+Workflow `.github/workflows/build.yml` на `macos-15`:
 
 - ставит XcodeGen;
 - генерирует `TrollSign.xcodeproj` из `project.yml`;
@@ -110,7 +118,9 @@ Workflow `.github/workflows/build.yml` запускается на `macos-15`:
 - упаковывает `TrollSign.ipa`;
 - публикует релиз `latest` и artifacts.
 
-Скачать: `https://github.com/No-Recovery/TrollSign/releases/latest/download/TrollSign.ipa`
+Скачать:
+
+`https://github.com/No-Recovery/TrollSign/releases/latest/download/TrollSign.ipa`
 
 ### Локально на macOS
 
@@ -120,8 +130,38 @@ xcodegen generate
 open TrollSign.xcodeproj
 ```
 
-В Xcode выберите свою команду/профиль для подписи. Минимальная версия iOS — **16.0**
-(используется `NavigationStack`).
+Выберите свою команду/профиль для подписи. Минимальная версия iOS — **16.0**.
+
+---
+
+## Структура
+
+```
+TrollSign/
+├── project.yml                 # XcodeGen-спецификация (iOS 16+)
+├── TrollSign/
+│   ├── TrollSignApp.swift      # точка входа, кастомный таб-бар
+│   ├── Theme.swift             # Liquid Glass: фон, панели, таб-бар
+│   ├── AppsView.swift          # список IPA, установка, детали
+│   ├── SettingsView.swift      # настройки, хостинг, maintenance, respring
+│   ├── CertificatesView.swift  # сертификаты + локальный сервер
+│   ├── Hosting.swift           # Ready hosting (catbox) + выбор провайдера
+│   ├── HostingView.swift       # экран настройки хостинга
+│   ├── GitHubHosting.swift     # GitHub API, Releases, Pages, манифест
+│   ├── Installer.swift         # ready/github/локальная установка
+│   ├── Signer.swift            # zsign: unzip → sign → zip
+│   ├── Respring.swift          # SBSRelaunchAction / killall
+│   ├── Stores.swift            # AppStore, CertStore
+│   ├── LocalServer.swift       # локальный HTTPS-сервер
+│   ├── Models.swift
+│   ├── Keychain.swift
+│   ├── KeepAlive.swift
+│   ├── DocumentPicker.swift
+│   ├── Info.plist
+│   └── Assets.xcassets
+├── docs/                       # GitHub Pages (лендинг + manifests/)
+└── .github/workflows/build.yml # сборка unsigned IPA на macOS
+```
 
 ## Зависимости
 
@@ -133,7 +173,9 @@ open TrollSign.xcodeproj
 ## Важно
 
 - iOS ставит приложения по `itms-services` только по **HTTPS с доверенным
-  сертификатом**; GitHub Pages это условие выполняет.
+  сертификатом**; Ready hosting и GitHub Pages это условие выполняют.
 - Для dev-профиля UDID устройства должен быть добавлен в профиль.
 - Это не TrollStore и не устанавливает неподписанные приложения «в обход»
   системы: приложение подписывает IPA вашим сертификатом.
+- Ready hosting использует catbox.moe. Если сервис недоступен, переключитесь на
+  GitHub hosting.

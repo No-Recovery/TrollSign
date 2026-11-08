@@ -3,71 +3,135 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TrollSign — подпись и установка IPA</title>
+<title>TrollSign 2.3 — подпись и установка IPA</title>
 <style>
-  :root { color-scheme: dark; --bg:#0b0d12; --card:#151923; --line:#242b3a; --text:#eef2ff; --muted:#9aa5bd; --accent:#6d8cff; }
+  :root {
+    color-scheme: dark;
+    --bg: #070a14;
+    --card: rgba(24, 30, 48, .62);
+    --line: rgba(255, 255, 255, .10);
+    --text: #f2f5ff;
+    --muted: #a3aec8;
+    --accent: #7c98ff;
+    --violet: #b184ff;
+    --aqua: #59e6d4;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-         background:radial-gradient(1000px 600px at 50% -200px,#1b2340,var(--bg)); color:var(--text); }
-  main { max-width:720px; margin:0 auto; padding:56px 20px 80px; }
-  .icon { width:96px; height:96px; border-radius:24px; box-shadow:0 18px 50px #0009; display:block; margin:0 auto 22px; }
-  h1 { font-size:40px; line-height:1.1; text-align:center; margin:0 0 10px; letter-spacing:-.02em; }
-  .sub { text-align:center; color:var(--muted); margin:0 auto 34px; max-width:560px; }
-  .card { background:linear-gradient(180deg,#181d29,#12161f); border:1px solid var(--line);
-          border-radius:18px; padding:22px; margin:16px 0; }
-  .btn { display:block; text-align:center; text-decoration:none; font-weight:650; color:#fff;
-         background:linear-gradient(180deg,#7c98ff,#536fe8); border-radius:12px; padding:14px 18px;
-         box-shadow:0 8px 24px #536fe855; }
-  .btn.secondary { background:#1d2331; border:1px solid var(--line); box-shadow:none; color:var(--text); }
-  .row { display:grid; gap:10px; grid-template-columns:1fr 1fr; }
-  h2 { font-size:18px; margin:0 0 10px; }
-  ol, ul { margin:0; padding-left:22px; color:#cbd4e8; }
-  li + li { margin-top:6px; }
-  code { background:#0e1118; border:1px solid var(--line); border-radius:6px; padding:2px 6px; font-size:.9em; }
-  .note { color:var(--muted); font-size:14px; }
-  footer { color:#6f7a93; text-align:center; font-size:13px; margin-top:34px; }
-  @media (max-width:520px) { h1 { font-size:32px; } .row { grid-template-columns:1fr; } }
+  body {
+    margin: 0;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(900px 600px at 15% -10%, #1c2a68 0%, transparent 60%),
+      radial-gradient(800px 500px at 95% 10%, #4a2470 0%, transparent 55%),
+      radial-gradient(700px 500px at 60% 100%, #0d4b4a 0%, transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 20px 80px; }
+  .icon { width: 104px; height: 104px; border-radius: 26px; box-shadow: 0 22px 60px #000a; display: block; margin: 0 auto 22px; }
+  h1 { font-size: 44px; line-height: 1.05; text-align: center; margin: 0 0 10px; letter-spacing: -.03em; }
+  .sub { text-align: center; color: var(--muted); margin: 0 auto 18px; max-width: 600px; }
+  .badge {
+    display: flex; width: max-content; margin: 0 auto 30px; gap: 7px; align-items: center;
+    color: var(--aqua); font-size: 13px; font-weight: 650;
+    background: rgba(89, 230, 212, .10); border: 1px solid rgba(89, 230, 212, .25);
+    padding: 7px 13px; border-radius: 999px;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(30, 37, 58, .72), rgba(17, 22, 36, .62));
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    margin: 16px 0;
+    box-shadow: 0 20px 50px #0005, inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+  .btn {
+    display: block; text-align: center; text-decoration: none; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, #8aa4ff, #6b7cff 45%, #a16bff);
+    border-radius: 16px; padding: 16px 18px;
+    box-shadow: 0 14px 34px #6b7cff55, inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn.secondary {
+    background: rgba(255,255,255,.06); border: 1px solid var(--line);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08); color: var(--text);
+  }
+  .row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  h2 { font-size: 18px; margin: 0 0 12px; letter-spacing: -.01em; }
+  ol, ul { margin: 0; padding-left: 22px; color: #d2daf0; }
+  li + li { margin-top: 8px; }
+  b { color: #fff; }
+  code {
+    background: rgba(0,0,0,.35); border: 1px solid var(--line);
+    border-radius: 7px; padding: 2px 7px; font-size: .88em; color: #cfe0ff;
+  }
+  .note { color: var(--muted); font-size: 14px; }
+  .grid { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+  .chip {
+    border: 1px solid var(--line); border-radius: 16px; padding: 13px 14px;
+    background: rgba(255,255,255,.035); font-size: 14px; color: #d9e1f5;
+  }
+  .chip b { display: block; font-size: 13px; margin-bottom: 2px; }
+  footer { color: #7480a0; text-align: center; font-size: 13px; margin-top: 36px; }
+  @media (max-width: 560px) {
+    h1 { font-size: 34px; }
+    .row, .grid { grid-template-columns: 1fr; }
+    main { padding-top: 40px; }
+  }
 </style>
 </head>
 <body>
 <main>
   <img class="icon" src="icon.png" alt="TrollSign">
-  <h1>TrollSign</h1>
-  <p class="sub">Подписывает IPA вашим сертификатом и устанавливает приложения по HTTPS — локально или через GitHub Pages.</p>
+  <h1>TrollSign 2.3</h1>
+  <p class="sub">Подписывает IPA вашим сертификатом через zsign и устанавливает приложения по HTTPS. Хостинг уже готов — настройка не нужна.</p>
+  <div class="badge">● Ready hosting · no setup</div>
 
   <div class="card">
     <a class="btn" href="https://github.com/No-Recovery/TrollSign/releases/latest/download/TrollSign.ipa">Скачать TrollSign.ipa</a>
-    <p class="note" style="margin:12px 2px 0">Сборка без подписи. Устанавливается через TrollStore, Sideloadly или AltStore. Для установки обычных приложений внутри TrollSign добавьте свой сертификат.</p>
+    <p class="note" style="margin:14px 2px 0">Сборка без подписи. Устанавливается через TrollStore, Sideloadly или AltStore. Для установки приложений внутри TrollSign добавьте свой сертификат.</p>
   </div>
 
   <div class="card">
-    <h2>Что внутри</h2>
-    <ul>
-      <li>Подпись IPA через <b>zsign</b> (настоящая, не заглушка).</li>
-      <li><b>GitHub Hosting</b>: подписанный IPA загружается в GitHub Releases, манифест — в GitHub Pages, установка идёт по <code>itms-services</code> без локального сервера.</li>
-      <li>Локальный HTTPS-сервер на <code>localhost.direct</code> остаётся как запасной вариант.</li>
-      <li>Сертификаты и установочный сервер: <b>Настройки → долгое нажатие на версию → Advanced → Certificates</b>.</li>
-      <li>URL-схемы: <code>trollsign://install?url=…</code> и <code>trollstorelite://install?url=…</code>.</li>
-    </ul>
+    <h2>Что нового</h2>
+    <div class="grid">
+      <div class="chip"><b>Ready hosting</b>Работает сразу, без токена и GitHub.</div>
+      <div class="chip"><b>Liquid Glass</b>Стеклянные панели и плавающий таб-бар.</div>
+      <div class="chip"><b>Respring</b>Перезапуск SpringBoard, как в TrollStore.</div>
+      <div class="chip"><b>Скрытые сертификаты</b>Только по долгому нажатию на Settings.</div>
+    </div>
   </div>
 
   <div class="card">
     <h2>Установка</h2>
     <ol>
       <li>Скачайте <code>TrollSign.ipa</code>.</li>
-      <li>Откройте файл в TrollStore (или установите через Sideloadly / AltStore).</li>
-      <li>В приложении откройте <b>Settings → GitHub Hosting</b>, укажите владельца, репозиторий и personal access token.</li>
-      <li>Добавьте сертификат: <b>Settings → долгое нажатие на «TrollSign 2.2» → Advanced → Certificates → +</b>.</li>
-      <li>Вкладка <b>Apps → +</b> → выберите IPA. Он подпишется и установится через GitHub Pages.</li>
+      <li>Откройте файл в TrollStore или установите через Sideloadly / AltStore.</li>
+      <li>Нажмите <b>+</b> на вкладке Apps и выберите IPA — он подпишется и установится через готовый хостинг.</li>
+      <li>Сертификаты: <b>зажмите нижний значок Settings</b> (0.55 с) → <b>Certificates</b> → <b>+</b>. Добавьте <code>.p12</code> и <code>.mobileprovision</code>.</li>
+      <li>Опционально: <b>Settings → Hosting</b> → GitHub hosting, если хотите публиковать в свой репозиторий.</li>
     </ol>
   </div>
 
+  <div class="card">
+    <h2>Как это работает</h2>
+    <ul>
+      <li><b>Подпись:</b> распаковка IPA → zsign → упаковка обратно.</li>
+      <li><b>Ready hosting:</b> IPA и <code>.xml</code>-манифест загружаются на публичный HTTPS-хост, установка идёт по <code>itms-services</code>.</li>
+      <li><b>GitHub hosting:</b> IPA → GitHub Releases, манифест → GitHub Pages (<code>docs/manifests/&lt;uuid&gt;.xml</code>).</li>
+      <li><b>Respring:</b> <code>SBSRelaunchAction</code> + <code>FBSSystemService</code>, запасной вариант — <code>killall SpringBoard</code>.</li>
+    </ul>
+    <p class="note">Ready hosting использует catbox.moe, лимит 200 МБ на файл. Ссылки публичные, но не индексируются.</p>
+  </div>
+
   <div class="row">
-    <a class="btn secondary" href="https://github.com/No-Recovery/TrollSign">Исходники на GitHub</a>
+    <a class="btn secondary" href="https://github.com/No-Recovery/TrollSign">Исходники</a>
     <a class="btn secondary" href="https://github.com/No-Recovery/TrollSign/releases">Все релизы</a>
   </div>
 
-  <footer>TrollSign 2.2 · GitHub Pages hosting by No-Recovery</footer>
+  <footer>TrollSign 2.3 · Liquid Glass · Ready hosting by No-Recovery</footer>
 </main>
 </body>
 </html>
